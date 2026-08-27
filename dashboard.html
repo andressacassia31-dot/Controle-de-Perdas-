@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - La Serenísima</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Importando o Chart.js para os gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased pb-12">
+
+    <!-- Cabeçalho com Navegação -->
+    <header class="bg-blue-800 text-white p-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold">La Serenísima | Gestão de Perdas</h1>
+                <span class="text-sm bg-blue-700 px-2 py-1 rounded">Bragança Paulista</span>
+            </div>
+            <nav class="flex space-x-4 bg-blue-900 p-1 rounded-lg">
+                <a href="index.html" class="px-4 py-2 rounded hover:bg-blue-700 transition text-sm font-medium">📝 Lançar Dados</a>
+                <a href="dashboard.html" class="px-4 py-2 rounded bg-blue-600 text-white shadow text-sm font-medium">📊 Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto mt-6 p-4 space-y-6">
+        
+        <!-- BARRA DE FILTROS -->
+        <section class="bg-white p-5 rounded-lg shadow-md">
+            <h2 class="text-sm font-bold text-gray-500 uppercase mb-3">Filtros de Análise</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Data Inicial</label>
+                    <input type="date" id="filtro_data_inicio" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Data Final</label>
+                    <input type="date" id="filtro_data_fim" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Turno</label>
+                    <select id="filtro_turno" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-blue-500">
+                        <option value="">Todos os Turnos</option>
+                        <option value="1">1º Turno</option>
+                        <option value="2">2º Turno</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Máquina</label>
+                    <select id="filtro_maquina" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-blue-500">
+                        <option value="">Todas as Máquinas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Produto</label>
+                    <select id="filtro_produto" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-blue-500">
+                        <option value="">Todos os Produtos</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARDS DE RESUMO (KPIs) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-5 rounded-lg shadow-md border-l-4 border-blue-500 flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Total de Perda (Matéria-Prima)</p>
+                    <h3 class="text-3xl font-bold text-gray-800" id="kpi_mp">0.00 kg</h3>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-lg shadow-md border-l-4 border-red-500 flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Total de Perda (Embalagem)</p>
+                    <h3 class="text-3xl font-bold text-gray-800" id="kpi_emb">0.00 kg</h3>
+                </div>
+                <div class="bg-red-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- GRÁFICOS -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-lg shadow-md">
+                <h3 class="text-md font-bold text-gray-700 mb-4 text-center">Evolução: Perda de Matéria-Prima (kg)</h3>
+                <canvas id="graficoMP" height="250"></canvas>
+            </div>
+            <div class="bg-white p-5 rounded-lg shadow-md">
+                <h3 class="text-md font-bold text-gray-700 mb-4 text-center">Evolução: Perda de Embalagem (kg)</h3>
+                <canvas id="graficoEmb" height="250"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 1. CONFIGURAÇÃO SUPABASE
+        const SUPABASE_URL = 'https://cgnniidbahkfuvhqyzvu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnbm5paWRiYWhrZnV2aHF5enZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTk4MjMsImV4cCI6MjEwMzA5NTgyM30.Fi9VFiHR97cSnRh-_5Orl-EPva6shd1W8wHhciMB44o';
+        const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Instâncias dos gráficos para podermos destruí-los antes de atualizar
+        let chartMP = null;
+        let chartEmb = null;
+
+        // Elementos do DOM
+        const filtros = {
+            dataInicio: document.getElementById('filtro_data_inicio'),
+            dataFim: document.getElementById('filtro_data_fim'),
+            turno: document.getElementById('filtro_turno'),
+            maquina: document.getElementById('filtro_maquina'),
+            produto: document.getElementById('filtro_produto')
+        };
+
+        // 2. INICIALIZAÇÃO
+        async function inicializarDashboard() {
+            configurarDatasPadrao();
+            await carregarFiltrosDropdowns();
+            adicionarEventosFiltros();
+            await atualizarDashboard();
+        }
+
+        // Define a busca inicial para os últimos 7 dias
+        function configurarDatasPadrao() {
+            const hoje = new Date();
+            const seteDiasAtras = new Date();
+            seteDiasAtras.setDate(hoje.getDate() - 7);
+
+            filtros.dataFim.value = hoje.toISOString().split('T')[0];
+            filtros.dataInicio.value = seteDiasAtras.toISOString().split('T')[0];
+        }
+
+        // Carrega máquinas e produtos do banco para popular os selects
+        async function carregarFiltrosDropdowns() {
+            try {
+                // Carrega Máquinas
+                const { data: maquinas } = await clienteSupabase.from('maquinas').select('*').order('linha');
+                if (maquinas) {
+                    maquinas.forEach(m => {
+                        const opt = new Option(`Linha ${m.linha} - ${m.nome}`, m.linha);
+                        filtros.maquina.add(opt);
+                    });
+                }
+
+                // Carrega Produtos
+                const { data: produtos } = await clienteSupabase.from('produtos').select('*').order('codigo');
+                if (produtos) {
+                    produtos.forEach(p => {
+                        const desc = p.descricao ? ` - ${p.descricao}` : '';
+                        const opt = new Option(`${p.codigo}${desc} (${p.peso_nominal_g}g)`, p.codigo);
+                        filtros.produto.add(opt);
+                    });
+                }
+            } catch (erro) {
+                console.error("Erro ao carregar dropdowns", erro);
+            }
+        }
+
+        // Refaz a busca sempre que o usuário mudar qualquer filtro
+        function adicionarEventosFiltros() {
+            Object.values(filtros).forEach(elemento => {
+                elemento.addEventListener('change', atualizarDashboard);
+            });
+        }
+
+        // 3. LÓGICA PRINCIPAL (BUSCA E PROCESSAMENTO)
+        async function atualizarDashboard() {
+            try {
+                // Monta a query base
+                let query = clienteSupabase.from('registros_producao').select('*');
+
+                // Aplica os filtros
+                if (filtros.dataInicio.value) query = query.gte('data_registro', filtros.dataInicio.value);
+                if (filtros.dataFim.value) query = query.lte('data_registro', filtros.dataFim.value);
+                if (filtros.turno.value) query = query.eq('turno', filtros.turno.value);
+                if (filtros.maquina.value) query = query.eq('linha_id', filtros.maquina.value);
+                if (filtros.produto.value) query = query.eq('produto_codigo', filtros.produto.value);
+
+                // Busca os dados filtrados ordenados por data
+                const { data: registros, error } = await query.order('data_registro', { ascending: true });
+                if (error) throw error;
+
+                atualizarKPIs(registros);
+                renderizarGraficos(registros);
+
+            } catch (erro) {
+                console.error("Erro ao atualizar dashboard:", erro);
+                alert("Erro ao carregar dados do banco.");
+            }
+        }
+
+        // 4. ATUALIZAÇÃO VISUAL
+        function atualizarKPIs(registros) {
+            let totalMP = 0;
+            let totalEmb = 0;
+
+            registros.forEach(r => {
+                totalMP += Number(r.perda_leite_kg || 0);
+                totalEmb += Number(r.perda_embalagem_kg || 0);
+            });
+
+            document.getElementById('kpi_mp').textContent = `${totalMP.toFixed(2)} kg`;
+            document.getElementById('kpi_emb').textContent = `${totalEmb.toFixed(2)} kg`;
+        }
+
+        function renderizarGraficos(registros) {
+            // Agrupar dados por data para plotar no gráfico
+            const dadosAgrupados = registros.reduce((acc, registro) => {
+                // Formatar data para exibição mais limpa (DD/MM/YYYY)
+                const dataBr = new Date(registro.data_registro + 'T00:00:00').toLocaleDateString('pt-BR');
+                
+                if (!acc[dataBr]) {
+                    acc[dataBr] = { mp: 0, emb: 0 };
+                }
+                acc[dataBr].mp += Number(registro.perda_leite_kg || 0);
+                acc[dataBr].emb += Number(registro.perda_embalagem_kg || 0);
+                return acc;
+            }, {});
+
+            const labels = Object.keys(dadosAgrupados);
+            const dadosMP = labels.map(data => dadosAgrupados[data].mp.toFixed(2));
+            const dadosEmb = labels.map(data => dadosAgrupados[data].emb.toFixed(2));
+
+            // Se os gráficos já existem, destruí-los para desenhar os novos com dados atualizados
+            if (chartMP) chartMP.destroy();
+            if (chartEmb) chartEmb.destroy();
+
+            // Configuração do Gráfico de Matéria-Prima
+            const ctxMP = document.getElementById('graficoMP').getContext('2d');
+            chartMP = new Chart(ctxMP, {
+                type: 'line', // Gráfico de linha para ver evolução no tempo
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Perda de MP (kg)',
+                        data: dadosMP,
+                        borderColor: 'rgb(59, 130, 246)', // Azul Tailwind
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+
+            // Configuração do Gráfico de Embalagem
+            const ctxEmb = document.getElementById('graficoEmb').getContext('2d');
+            chartEmb = new Chart(ctxEmb, {
+                type: 'bar', // Gráfico de barras para variação
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Perda de Embalagem (kg)',
+                        data: dadosEmb,
+                        backgroundColor: 'rgb(239, 68, 68)', // Vermelho Tailwind
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // Inicia a tela
+        inicializarDashboard();
+
+    </script>
+</body>
+</html>
