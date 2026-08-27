@@ -25,6 +25,7 @@
                 <h1 class="text-xl font-bold">La Serenísima | Diário de Produção</h1>
                 <span class="text-sm bg-blue-700 px-2 py-1 rounded">Bragança Paulista</span>
             </div>
+            <!-- Menu de navegação -->
             <nav class="flex space-x-4 bg-blue-900 p-1 rounded-lg">
                 <a href="index.html" class="px-4 py-2 rounded bg-blue-600 text-white shadow text-sm font-medium">📝 Lançar Dados</a>
                 <a href="dashboard.html" class="px-4 py-2 rounded hover:bg-blue-700 transition text-sm font-medium">📊 Dashboard</a>
@@ -149,11 +150,17 @@
     </main>
 
     <script>
+        // ==========================================
+        // 1. CONFIGURAÇÃO DO SUPABASE
+        // ==========================================
         const SUPABASE_URL = 'https://cgnniidbahkfuvhqyzvu.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnbm5paWRiYWhrZnV2aHF5enZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTk4MjMsImV4cCI6MjEwMzA5NTgyM30.Fi9VFiHR97cSnRh-_5Orl-EPva6shd1W8wHhciMB44o';
         
         const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // ==========================================
+        // 2. VARIÁVEIS GLOBAIS DE REFERÊNCIA
+        // ==========================================
         let dadosAtuais = {
             pesoNominal: 0,
             tara: 0,
@@ -161,6 +168,9 @@
             perda_emb_kg: 0
         };
 
+        // ==========================================
+        // 3. ELEMENTOS DA INTERFACE (DOM)
+        // ==========================================
         const elementos = {
             form: document.getElementById('registroForm'),
             maquinaSelect: document.getElementById('maquina'),
@@ -177,6 +187,9 @@
             status: document.getElementById('statusMessage')
         };
 
+        // ==========================================
+        // 4. INICIALIZAÇÃO (CARREGAR MÁQUINAS)
+        // ==========================================
         async function carregarMaquinas() {
             try {
                 const { data, error } = await clienteSupabase.from('maquinas').select('linha, nome').order('linha');
@@ -197,6 +210,9 @@
         
         carregarMaquinas();
 
+        // ==========================================
+        // 5. EVENTOS DA INTERFACE
+        // ==========================================
         elementos.teveSetupCheckbox.addEventListener('change', (e) => {
             if (e.target.checked) {
                 elementos.setupFields.classList.remove('hidden');
@@ -254,6 +270,9 @@
             document.getElementById(id).addEventListener('input', calcularPerdas);
         });
 
+        // ==========================================
+        // 6. REGRAS DE NEGÓCIO: CÁLCULO DE PERDAS
+        // ==========================================
         function calcularPerdas() {
             const volume = parseFloat(elementos.volumeAceito.value) || 0;
             const media = parseFloat(elementos.mediaBalanca.value) || 0;
@@ -261,37 +280,37 @@
 
             if (dadosAtuais.pesoNominal === 0) return;
 
-            // 1. Perda de Matéria-Prima (Leite em pó)
+            // 6.1: Calcula o excedente em gramas (Só há perda se a média for maior que o nominal)
             let excedente_g = media - dadosAtuais.pesoNominal;
             if (excedente_g < 0) excedente_g = 0; 
             
+            // 6.2: FÓRMULA DE PERDA DE MP (KG) -> (Volume aceito * Excedente) / 1000
             dadosAtuais.perda_mp_kg = (volume * excedente_g) / 1000;
             elementos.resPerdaMp.textContent = `${dadosAtuais.perda_mp_kg.toFixed(2)} kg`;
 
-            const totalKgProduzido = (volume * dadosAtuais.pesoNominal) / 1000;
-            let porcentagemMp = 0;
-            if (totalKgProduzido > 0) {
-                porcentagemMp = (dadosAtuais.perda_mp_kg / totalKgProduzido) * 100;
-            }
-            
+            // 6.3: FÓRMULA DE PORCENTAGEM (%) -> (Excedente / Peso Nominal) * 100
+            let porcentagemMp = (excedente_g / dadosAtuais.pesoNominal) * 100;
             elementos.resPorcentagemMp.textContent = `${porcentagemMp.toFixed(3)}%`;
             
-            // Regra visual rigorosa para o limite de 0.35%
+            // Regra visual para o limite de 0.35%
             if (porcentagemMp > 0.35) {
                 elementos.cardMp.className = "p-3 bg-red-50 border border-red-300 rounded transition-colors";
                 elementos.resPorcentagemMp.className = "text-sm block font-bold text-red-600";
-                elementos.resPorcentagemMp.textContent += " (Acima da meta de 0.35%!)";
+                elementos.resPorcentagemMp.textContent += " (Acima da meta!)";
             } else {
                 elementos.cardMp.className = "p-3 bg-blue-50 border border-blue-200 rounded transition-colors";
                 elementos.resPorcentagemMp.className = "text-sm block font-medium text-green-600";
                 elementos.resPorcentagemMp.textContent += " (Dentro da meta)";
             }
 
-            // 2. Perda de Embalagem
+            // 6.4: FÓRMULA DE PERDA DE EMBALAGEM (KG) -> (Rejeitos * Tara) / 1000
             dadosAtuais.perda_emb_kg = (rejeitos * dadosAtuais.tara) / 1000;
             elementos.resPerdaEmb.textContent = `${dadosAtuais.perda_emb_kg.toFixed(2)} kg`;
         }
 
+        // ==========================================
+        // 7. ENVIO DE DADOS (SUBMIT)
+        // ==========================================
         elementos.form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -330,6 +349,9 @@
             }
         });
 
+        // ==========================================
+        // 8. FUNÇÕES AUXILIARES
+        // ==========================================
         function mostrarStatus(msg, type) {
             elementos.status.textContent = msg;
             elementos.status.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-blue-100', 'text-blue-800');
