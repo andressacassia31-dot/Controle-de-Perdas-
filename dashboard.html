@@ -11,16 +11,18 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased pb-12">
 
-    <!-- Cabeçalho com Navegação -->
+    <!-- Cabeçalho com Navegação Atualizada -->
     <header class="bg-blue-800 text-white p-4 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold">La Serenísima | Gestão de Perdas</h1>
                 <span class="text-sm bg-blue-700 px-2 py-1 rounded">Bragança Paulista</span>
             </div>
-            <nav class="flex space-x-4 bg-blue-900 p-1 rounded-lg">
-                <a href="index.html" class="px-4 py-2 rounded hover:bg-blue-700 transition text-sm font-medium">📝 Lançar Dados</a>
-                <a href="dashboard.html" class="px-4 py-2 rounded bg-blue-600 text-white shadow text-sm font-medium">📊 Dashboard</a>
+            <!-- Menu Novo com aba Histórico (Dashboard ativo) -->
+            <nav class="flex space-x-2 bg-blue-900 p-1 rounded-lg overflow-x-auto">
+                <a href="index.html" class="px-3 py-2 rounded hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">📝 Lançar</a>
+                <a href="historico.html" class="px-3 py-2 rounded hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">⏳ Histórico</a>
+                <a href="dashboard.html" class="px-3 py-2 rounded bg-blue-600 text-white shadow text-sm font-medium whitespace-nowrap">📊 Dashboard</a>
             </nav>
         </div>
     </header>
@@ -233,13 +235,13 @@
             // Configuração do Gráfico de Matéria-Prima
             const ctxMP = document.getElementById('graficoMP').getContext('2d');
             chartMP = new Chart(ctxMP, {
-                type: 'line', // Gráfico de linha para ver evolução no tempo
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Perda de MP (kg)',
                         data: dadosMP,
-                        borderColor: 'rgb(59, 130, 246)', // Azul Tailwind
+                        borderColor: 'rgb(59, 130, 246)', 
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         borderWidth: 2,
                         tension: 0.3,
@@ -252,13 +254,13 @@
             // Configuração do Gráfico de Embalagem
             const ctxEmb = document.getElementById('graficoEmb').getContext('2d');
             chartEmb = new Chart(ctxEmb, {
-                type: 'bar', // Gráfico de barras para variação
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Perda de Embalagem (kg)',
                         data: dadosEmb,
-                        backgroundColor: 'rgb(239, 68, 68)', // Vermelho Tailwind
+                        backgroundColor: 'rgb(239, 68, 68)', 
                         borderRadius: 4
                     }]
                 },
