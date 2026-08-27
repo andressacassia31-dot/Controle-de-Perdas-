@@ -149,7 +149,8 @@
         const SUPABASE_URL = 'https://cgnniidbahkfuvhqyzvu.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnbm5paWRiYWhrZnV2aHF5enZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTk4MjMsImV4cCI6MjEwMzA5NTgyM30.Fi9VFiHR97cSnRh-_5Orl-EPva6shd1W8wHhciMB44o';
         
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // CORREÇÃO: Mudamos o nome da variável de "supabase" para "clienteSupabase"
+        const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ==========================================
         // 2. VARIÁVEIS GLOBAIS DE REFERÊNCIA
@@ -184,7 +185,8 @@
         // ==========================================
         async function carregarMaquinas() {
             try {
-                const { data, error } = await supabase.from('maquinas').select('linha, nome').order('linha');
+                // CORREÇÃO: Usando clienteSupabase
+                const { data, error } = await clienteSupabase.from('maquinas').select('linha, nome').order('linha');
                 if (error) throw error;
                 
                 elementos.maquinaSelect.innerHTML = '<option value="">Selecione a máquina...</option>';
@@ -227,8 +229,8 @@
             if (!linhaId) return;
 
             try {
-                // Busca os produtos atrelados àquela máquina e puxa peso e tara da tabela 'produtos'
-                const { data, error } = await supabase
+                // CORREÇÃO: Usando clienteSupabase
+                const { data, error } = await clienteSupabase
                     .from('maquina_produto')
                     .select('produto_codigo, produtos(peso_nominal_g, tara_g, descricao)')
                     .eq('linha_id', linhaId);
@@ -335,8 +337,8 @@
             try {
                 mostrarStatus('Salvando dados...', 'loading');
                 
-                // Comunicação com o Supabase
-                const { error } = await supabase.from('registros_producao').insert([payload]);
+                // CORREÇÃO: Usando clienteSupabase
+                const { error } = await clienteSupabase.from('registros_producao').insert([payload]);
                 
                 if (error) throw error;
                 
