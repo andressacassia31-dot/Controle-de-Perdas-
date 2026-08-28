@@ -3,368 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Serenísima - Diário de Produção</title>
-    <!-- Carregando Tailwind CSS para o visual -->
+    <title>Histórico - La Serenísima</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carregando a biblioteca oficial do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* Ocultando as setinhas padrão dos campos numéricos para visual mais limpo */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; margin: 0; 
-        }
-    </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased pb-12">
 
     <!-- Cabeçalho com Navegação -->
     <header class="bg-blue-800 text-white p-4 shadow-md">
-        <div class="max-w-3xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-xl font-bold">La Serenísima | Diário de Produção</h1>
+                <h1 class="text-xl font-bold">La Serenísima | Gestão de Perdas</h1>
                 <span class="text-sm bg-blue-700 px-2 py-1 rounded">Bragança Paulista</span>
             </div>
-            <!-- Menu de navegação -->
-          <nav class="flex space-x-2 bg-blue-900 p-1 rounded-lg overflow-x-auto">
-    <a href="index.html" class="px-3 py-2 rounded bg-blue-600 text-white shadow text-sm font-medium whitespace-nowrap">📝 Lançar</a>
-    <a href="historico.html" class="px-3 py-2 rounded hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">⏳ Histórico</a>
-    <a href="dashboard.html" class="px-3 py-2 rounded hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">📊 Dashboard</a>
-</nav>
+            <!-- Menu Responsivo -->
+            <nav class="flex space-x-2 bg-blue-900 p-1 rounded-lg overflow-x-auto">
+                <a href="index.html" class="px-3 py-2 rounded hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">📝 Lançar</a>
+                <a href="historico.html" class="px-3 py-2 rounded bg-blue-600 text-white shadow text-sm font-medium whitespace-nowrap">⏳ Histórico</a>
+                <a href="dashboard.html" class="px-3 py-2 rounded hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">📊 Dashboard</a>
+            </nav>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto mt-6 p-4">
+    <main class="max-w-4xl mx-auto mt-6 p-4 space-y-6">
         
-        <form id="registroForm" class="bg-white p-6 rounded-lg shadow-md space-y-6">
-            <!-- Mensagem de Status (Salvo, Erro, etc) -->
-            <div id="statusMessage" class="hidden p-3 rounded text-sm text-center font-bold"></div>
-
-            <!-- Seção 1: Identificação -->
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-blue-800">1. Identificação</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Turno</label>
-                        <select id="turno" required class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500">
-                            <option value="">Selecione...</option>
-                            <option value="1">1º Turno (07:00 as 16:45)</option>
-                            <option value="2">2º Turno (17:00 as 01:45)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Máquina (Linha)</label>
-                        <select id="maquina" required class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500">
-                            <option value="">Carregando máquinas...</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção 2: Dados de Produção -->
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-blue-800">2. Dados de Produção</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Produto Produzido</label>
-                        <select id="produto" required class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500" disabled>
-                            <option value="">Selecione a máquina primeiro...</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Volume Produzido (Aceito)</label>
-                        <input type="number" id="volume_aceito" required min="0" class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500" placeholder="Qtd pacotes">
-                    </div>
-                </div>
-
-                <!-- Checkbox e campos de Setup -->
-                <div class="mt-4 p-4 bg-gray-50 rounded border border-gray-200">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="teve_setup" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <span class="text-sm font-medium text-gray-700">Tivemos Setup no turno?</span>
-                    </label>
-                    <div id="setup_fields" class="hidden mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Qual Produto (Setup)?</label>
-                            <input type="text" id="setup_produto" class="w-full border border-gray-300 rounded p-2" placeholder="Cód. Produto">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Volume Produzido (Setup)</label>
-                            <input type="number" id="setup_volume" class="w-full border border-gray-300 rounded p-2" placeholder="Qtd pacotes">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção 3: Balança e Perdas -->
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-blue-800">3. Dados da Balança e Perdas</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Média da Balança (g)</label>
-                        <input type="number" id="media_balanca" step="0.01" required class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500" placeholder="Ex: 203.9">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Total de Rejeitos (Qtd)</label>
-                        <input type="number" id="rejeitos_qtd" required min="0" class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500" placeholder="Qtd pacotes rejeitados">
-                    </div>
-                </div>
-
-                <!-- Exibição dos cálculos automáticos -->
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div id="card_mp" class="p-3 bg-blue-50 border border-blue-200 rounded transition-colors">
-                        <span class="block text-xs text-blue-600 font-bold uppercase">Perda de Matéria-Prima (MP)</span>
-                        <span id="resultado_perda_mp" class="text-2xl font-bold text-gray-800">0.00 kg</span>
-                        <span id="porcentagem_mp" class="text-sm block font-medium">0.00% (Meta máx: 0.35%)</span>
-                    </div>
-                    <div class="p-3 bg-red-50 border border-red-200 rounded">
-                        <span class="block text-xs text-red-600 font-bold uppercase">Perda de Embalagem</span>
-                        <span id="resultado_perda_emb" class="text-2xl font-bold text-gray-800">0.00 kg</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Seção 4: Ocorrências -->
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-blue-800">4. Ocorrências (Diário)</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Problemas Identificados</label>
-                        <textarea id="problemas" rows="2" class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Plano de Ação</label>
-                        <textarea id="plano_acao" rows="2" class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Resultado Alcançado</label>
-                        <textarea id="resultado_alcancado" rows="2" class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botão de Enviar -->
-            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded hover:bg-blue-700 transition duration-200">
-                Salvar Registro no Supabase
+        <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="text-xl font-semibold text-blue-800">Últimos Lançamentos</h2>
+            <button onclick="carregarHistorico()" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-gray-700 transition flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Atualizar
             </button>
-        </form>
+        </div>
+
+        <!-- Container de Cards -->
+        <div id="lista_historico" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p class="text-gray-500 text-sm">Carregando histórico...</p>
+        </div>
+
     </main>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURAÇÃO DO SUPABASE
-        // ==========================================
+        // 1. CONFIGURAÇÃO SUPABASE
         const SUPABASE_URL = 'https://cgnniidbahkfuvhqyzvu.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnbm5paWRiYWhrZnV2aHF5enZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTk4MjMsImV4cCI6MjEwMzA5NTgyM30.Fi9VFiHR97cSnRh-_5Orl-EPva6shd1W8wHhciMB44o';
-        
         const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ==========================================
-        // 2. VARIÁVEIS GLOBAIS DE REFERÊNCIA
-        // ==========================================
-        let dadosAtuais = {
-            pesoNominal: 0,
-            tara: 0,
-            perda_mp_kg: 0,
-            perda_emb_kg: 0
-        };
+        const containerHistorico = document.getElementById('lista_historico');
 
-        // ==========================================
-        // 3. ELEMENTOS DA INTERFACE (DOM)
-        // ==========================================
-        const elementos = {
-            form: document.getElementById('registroForm'),
-            maquinaSelect: document.getElementById('maquina'),
-            produtoSelect: document.getElementById('produto'),
-            teveSetupCheckbox: document.getElementById('teve_setup'),
-            setupFields: document.getElementById('setup_fields'),
-            volumeAceito: document.getElementById('volume_aceito'),
-            mediaBalanca: document.getElementById('media_balanca'),
-            rejeitosQtd: document.getElementById('rejeitos_qtd'),
-            resPerdaMp: document.getElementById('resultado_perda_mp'),
-            resPorcentagemMp: document.getElementById('porcentagem_mp'),
-            resPerdaEmb: document.getElementById('resultado_perda_emb'),
-            cardMp: document.getElementById('card_mp'),
-            status: document.getElementById('statusMessage')
-        };
-
-        // ==========================================
-        // 4. INICIALIZAÇÃO (CARREGAR MÁQUINAS)
-        // ==========================================
-        async function carregarMaquinas() {
-            try {
-                const { data, error } = await clienteSupabase.from('maquinas').select('linha, nome').order('linha');
-                if (error) throw error;
-                
-                elementos.maquinaSelect.innerHTML = '<option value="">Selecione a máquina...</option>';
-                data.forEach(m => {
-                    const option = document.createElement('option');
-                    option.value = m.linha;
-                    option.textContent = `Linha ${m.linha} - ${m.nome}`;
-                    elementos.maquinaSelect.appendChild(option);
-                });
-            } catch (err) {
-                mostrarStatus('Erro ao carregar máquinas do banco.', 'error');
-                console.error(err);
-            }
-        }
-        
-        carregarMaquinas();
-
-        // ==========================================
-        // 5. EVENTOS DA INTERFACE
-        // ==========================================
-        elementos.teveSetupCheckbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                elementos.setupFields.classList.remove('hidden');
-            } else {
-                elementos.setupFields.classList.add('hidden');
-                document.getElementById('setup_produto').value = '';
-                document.getElementById('setup_volume').value = '';
-            }
-        });
-
-        elementos.maquinaSelect.addEventListener('change', async (e) => {
-            const linhaId = e.target.value;
-            elementos.produtoSelect.innerHTML = '<option value="">Carregando...</option>';
-            elementos.produtoSelect.disabled = true;
-
-            if (!linhaId) return;
+        // 2. BUSCAR DADOS
+        async function carregarHistorico() {
+            containerHistorico.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-4">Buscando dados...</p>';
 
             try {
-                const { data, error } = await clienteSupabase
-                    .from('maquina_produto')
-                    .select('produto_codigo, produtos(peso_nominal_g, tara_g, descricao)')
-                    .eq('linha_id', linhaId);
+                const { data: registros, error } = await clienteSupabase
+                    .from('registros_producao')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
 
                 if (error) throw error;
 
-                elementos.produtoSelect.innerHTML = '<option value="">Selecione o produto...</option>';
-                data.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.produto_codigo;
-                    option.dataset.peso = item.produtos.peso_nominal_g;
-                    option.dataset.tara = item.produtos.tara_g;
-                    
-                    const desc = item.produtos.descricao ? ` - ${item.produtos.descricao}` : '';
-                    option.textContent = `${item.produto_codigo}${desc} (${item.produtos.peso_nominal_g}g | Tara: ${item.produtos.tara_g}g)`;
-                    
-                    elementos.produtoSelect.appendChild(option);
-                });
-                elementos.produtoSelect.disabled = false;
+                renderizarRegistros(registros);
+
             } catch (err) {
                 console.error(err);
-                mostrarStatus('Erro ao carregar produtos.', 'error');
+                containerHistorico.innerHTML = '<p class="text-red-500 text-sm col-span-full text-center py-4">Erro ao carregar histórico. Verifique o console.</p>';
             }
-        });
-
-        elementos.produtoSelect.addEventListener('change', (e) => {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            if (selectedOption.value) {
-                dadosAtuais.pesoNominal = parseFloat(selectedOption.dataset.peso);
-                dadosAtuais.tara = parseFloat(selectedOption.dataset.tara);
-                calcularPerdas();
-            }
-        });
-
-        ['volume_aceito', 'media_balanca', 'rejeitos_qtd'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calcularPerdas);
-        });
-
-        // ==========================================
-        // 6. REGRAS DE NEGÓCIO: CÁLCULO DE PERDAS
-        // ==========================================
-        function calcularPerdas() {
-            const volume = parseFloat(elementos.volumeAceito.value) || 0;
-            const media = parseFloat(elementos.mediaBalanca.value) || 0;
-            const rejeitos = parseFloat(elementos.rejeitosQtd.value) || 0;
-
-            if (dadosAtuais.pesoNominal === 0) return;
-
-            // 6.1: Calcula o excedente em gramas (Só há perda se a média for maior que o nominal)
-            let excedente_g = media - dadosAtuais.pesoNominal;
-            if (excedente_g < 0) excedente_g = 0; 
-            
-            // 6.2: FÓRMULA DE PERDA DE MP (KG) -> (Volume aceito * Excedente) / 1000
-            dadosAtuais.perda_mp_kg = (volume * excedente_g) / 1000;
-            elementos.resPerdaMp.textContent = `${dadosAtuais.perda_mp_kg.toFixed(2)} kg`;
-
-            // 6.3: FÓRMULA DE PORCENTAGEM (%) -> (Excedente / Peso Nominal) * 100
-            let porcentagemMp = (excedente_g / dadosAtuais.pesoNominal) * 100;
-            elementos.resPorcentagemMp.textContent = `${porcentagemMp.toFixed(3)}%`;
-            
-            // Regra visual para o limite de 0.35%
-            if (porcentagemMp > 0.35) {
-                elementos.cardMp.className = "p-3 bg-red-50 border border-red-300 rounded transition-colors";
-                elementos.resPorcentagemMp.className = "text-sm block font-bold text-red-600";
-                elementos.resPorcentagemMp.textContent += " (Acima da meta!)";
-            } else {
-                elementos.cardMp.className = "p-3 bg-blue-50 border border-blue-200 rounded transition-colors";
-                elementos.resPorcentagemMp.className = "text-sm block font-medium text-green-600";
-                elementos.resPorcentagemMp.textContent += " (Dentro da meta)";
-            }
-
-            // 6.4: FÓRMULA DE PERDA DE EMBALAGEM (KG) -> (Rejeitos * Tara) / 1000
-            dadosAtuais.perda_emb_kg = (rejeitos * dadosAtuais.tara) / 1000;
-            elementos.resPerdaEmb.textContent = `${dadosAtuais.perda_emb_kg.toFixed(2)} kg`;
         }
 
-        // ==========================================
-        // 7. ENVIO DE DADOS (SUBMIT)
-        // ==========================================
-        elementos.form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const payload = {
-                turno: parseInt(document.getElementById('turno').value),
-                linha_id: parseInt(elementos.maquinaSelect.value),
-                produto_codigo: elementos.produtoSelect.value,
-                volume_aceito: parseInt(elementos.volumeAceito.value),
-                teve_setup: elementos.teveSetupCheckbox.checked,
-                setup_produto_codigo: document.getElementById('setup_produto').value || null,
-                setup_volume: parseInt(document.getElementById('setup_volume').value) || null,
-                media_balanca: parseFloat(elementos.mediaBalanca.value),
-                rejeitos_qtd: parseInt(elementos.rejeitosQtd.value),
-                problemas: document.getElementById('problemas').value,
-                plano_acao: document.getElementById('plano_acao').value,
-                resultado_alcancado: document.getElementById('resultado_alcancado').value,
-                perda_leite_kg: dadosAtuais.perda_mp_kg,
-                perda_embalagem_kg: dadosAtuais.perda_emb_kg
-            };
+        // 3. RENDERIZAR NA TELA
+        function renderizarRegistros(registros) {
+            if (!registros || registros.length === 0) {
+                containerHistorico.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-4">Nenhum registro encontrado.</p>';
+                return;
+            }
+
+            containerHistorico.innerHTML = '';
+
+            registros.forEach(registro => {
+                const dataObj = new Date(registro.created_at);
+                const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+                const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                // Lógica Dinâmica: Só monta o bloco de ocorrências se houver algum texto digitado
+                let blocoOcorrenciasHtml = '';
+                if (registro.problemas || registro.plano_acao || registro.resultado_alcancado) {
+                    blocoOcorrenciasHtml = `
+                        <div class="mt-3 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-gray-800">
+                            <h4 class="font-bold text-yellow-800 mb-2 uppercase text-[10px] tracking-wider">Ocorrências Registradas</h4>
+                            ${registro.problemas ? `<p class="mb-1"><span class="font-semibold text-gray-700">Problemas:</span> ${registro.problemas}</p>` : ''}
+                            ${registro.plano_acao ? `<p class="mb-1"><span class="font-semibold text-gray-700">Plano de Ação:</span> ${registro.plano_acao}</p>` : ''}
+                            ${registro.resultado_alcancado ? `<p><span class="font-semibold text-gray-700">Resultado:</span> ${registro.resultado_alcancado}</p>` : ''}
+                        </div>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-lg shadow border border-gray-200 flex flex-col justify-between";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-3 border-b pb-2">
+                            <div>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">Linha ${registro.linha_id}</span>
+                                <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded ml-1">${registro.turno}º Turno</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500 font-medium">${dataFormatada}</p>
+                                <p class="text-xs text-gray-400">${horaFormatada}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 space-y-1">
+                            <p class="text-sm"><span class="font-semibold text-gray-700">Produto:</span> ${registro.produto_codigo}</p>
+                            <p class="text-sm"><span class="font-semibold text-gray-700">Volume Aceito:</span> ${registro.volume_aceito} un</p>
+                            <p class="text-sm"><span class="font-semibold text-gray-700">Média Balança:</span> ${registro.media_balanca}g</p>
+                        </div>
+
+                        <div class="flex space-x-2 mb-2">
+                            <div class="flex-1 bg-red-50 p-2 rounded text-center border border-red-100">
+                                <p class="text-[10px] uppercase font-bold text-red-600">Perda MP</p>
+                                <p class="font-bold text-gray-800">${Number(registro.perda_leite_kg).toFixed(2)} kg</p>
+                            </div>
+                            <div class="flex-1 bg-orange-50 p-2 rounded text-center border border-orange-100">
+                                <p class="text-[10px] uppercase font-bold text-orange-600">Perda Emb.</p>
+                                <p class="font-bold text-gray-800">${Number(registro.perda_embalagem_kg).toFixed(2)} kg</p>
+                            </div>
+                        </div>
+
+                        <!-- Injeção condicional do bloco de ocorrências -->
+                        ${blocoOcorrenciasHtml}
+
+                    </div>
+
+                    <button onclick="deletarRegistro('${registro.id}')" class="mt-auto w-full flex items-center justify-center gap-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 transition-colors py-2 rounded text-sm font-semibold">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Apagar Lançamento
+                    </button>
+                `;
+
+                containerHistorico.appendChild(card);
+            });
+        }
+
+        // 4. DELETAR REGISTRO
+        async function deletarRegistro(id) {
+            const confirmacao = window.confirm("⚠️ ATENÇÃO: Tem certeza que deseja apagar este lançamento?\n\nEsta ação não pode ser desfeita.");
+            if (!confirmacao) return;
 
             try {
-                mostrarStatus('Salvando dados...', 'loading');
-                const { error } = await clienteSupabase.from('registros_producao').insert([payload]);
-                
+                const { error } = await clienteSupabase
+                    .from('registros_producao')
+                    .delete()
+                    .eq('id', id);
+
                 if (error) throw error;
-                
-                mostrarStatus('Registro salvo com sucesso!', 'success');
-                elementos.form.reset();
-                elementos.setupFields.classList.add('hidden');
-                dadosAtuais = { pesoNominal: 0, tara: 0, perda_mp_kg: 0, perda_emb_kg: 0 };
-                calcularPerdas();
-                
+
+                alert("Lançamento apagado com sucesso!");
+                carregarHistorico();
+
             } catch (err) {
                 console.error(err);
-                mostrarStatus('Erro ao salvar. Verifique o console ou a conexão.', 'error');
-            }
-        });
-
-        // ==========================================
-        // 8. FUNÇÕES AUXILIARES
-        // ==========================================
-        function mostrarStatus(msg, type) {
-            elementos.status.textContent = msg;
-            elementos.status.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-blue-100', 'text-blue-800');
-            
-            if (type === 'success') elementos.status.classList.add('bg-green-100', 'text-green-800');
-            else if (type === 'error') elementos.status.classList.add('bg-red-100', 'text-red-800');
-            else if (type === 'loading') elementos.status.classList.add('bg-blue-100', 'text-blue-800');
-            
-            if(type !== 'loading') {
-                setTimeout(() => elementos.status.classList.add('hidden'), 5000);
+                alert("Erro ao apagar. Verifique sua conexão ou as permissões do banco.");
             }
         }
+
+        carregarHistorico();
+
     </script>
 </body>
 </html>
